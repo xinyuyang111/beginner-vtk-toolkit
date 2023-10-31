@@ -3,7 +3,13 @@ import numpy as np
 
 
 def show_points(poly_lst=[], points=[], poly_color_lst=[], add_axes=False):#(X, Y, Z)
-
+    """
+    show vtk.vtkPolyData, coordinate point, vtk.vtkPolyData's color, axis
+    poly_lst:       list of vtk.vtkPolyData
+    points:         list of coordinate point 
+    poly_color_lst: list of vtk.vtkPolyData's color, The index is the same as that of poly_lst
+    add_axes:       Whether to show coordinate axes
+    """
     renderer = vtk.vtkRenderer()
     axes = vtk.vtkAxesActor()
     axes.SetTotalLength(1000, 1000, 1000)  # Set the total length of the axes in 3 dimensions(X, Y, Z)
@@ -50,52 +56,60 @@ def show_points(poly_lst=[], points=[], poly_color_lst=[], add_axes=False):#(X, 
     style = vtk.vtkInteractorStyleTrackballCamera()
     renderWindowInteractor.SetInteractorStyle(style)
 
-    # 渲染场景并启动交互器
     renderWindowInteractor.Initialize()
     renderWindow.Render()
     renderWindowInteractor.Start()
 
-def stl_reader_polydata(path):
+def stl_reader_polydata(path)->vtk.vtkPolyData:
+    """
+    path: .stl file path
+    return vtk.vtkPolyData
+    """
     reader = vtk.vtkSTLReader()
     reader.SetFileName(path)
     reader.Update()
     return reader.GetOutput()
 
-def stl_writer_polydata(poly, path):
-    writer = vtk.vtkSTLWriter()
-    writer.SetInputData(poly)
-    writer.SetFileName(path)
-    writer.Write()
-    
+
 def ply_reader_polydata(path)->vtk.vtkPolyData:
     reader = vtk.vtkPLYReader()
     reader.SetFileName(path)
     reader.Update()
     return reader.GetOutput()
 
-def obj_reader_polydata(path):
+def obj_reader_polydata(path)->vtk.vtkPolyData:
     reader = vtk.vtkOBJReader()
     reader.SetFileName(path)
     reader.Update()
     return reader.GetOutput()
 
+
+def stl_writer_polydata(poly, path):
+    """
+    poly: vtk.vtkPolyData
+    path: .stl file path(xxx.stl)
+    Save polydata to the path
+    """
+    writer = vtk.vtkSTLWriter()
+    writer.SetInputData(poly)
+    writer.SetFileName(path)
+    writer.Write()
+    
+
 def point_projection_line(v, p):
-    v_normalized = v / np.linalg.norm(v)  # 将向量v标准化（单位向量）
+    v_normalized = v / np.linalg.norm(v)
     return np.dot(p, v_normalized) * v_normalized
 
 def point_dis(p1, p2):
     return ((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2 + (p1[2] - p2[2])**2)**0.5
 
 def smooth_polydata(polydata, iter=100, factor=0.1):
-    # 创建SmoothPolyDataFilter并设置参数
+
     smooth_filter = vtk.vtkSmoothPolyDataFilter()
     smooth_filter.SetInputData(polydata)
-    smooth_filter.SetNumberOfIterations(iter)  # 设置迭代次数
-    smooth_filter.SetRelaxationFactor(factor)  # 设置平滑程度
-
-    # 执行平滑
+    smooth_filter.SetNumberOfIterations(iter)  
+    smooth_filter.SetRelaxationFactor(factor)  
     smooth_filter.Update()
 
-    # 获取平滑后的PolyData
     smoothed_polydata = smooth_filter.GetOutput()
     return smoothed_polydata
